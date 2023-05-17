@@ -4,11 +4,18 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.FocusEvent;
 import java.awt.event.FocusListener;
+import java.awt.event.MouseAdapter;
+import java.awt.event.MouseEvent;
+import java.io.IOException;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 public class Window extends JFrame {
     private JLabel label1;
     private JLabel label2;
     private JLabel label3;
+    private JLabel label4;
+    private JLabel label5;
     private JTextField textField1;
     private JPasswordField passField;
     private JButton button;
@@ -40,6 +47,8 @@ public class Window extends JFrame {
         label1 = new JLabel();
         label2 = new JLabel();
         label3 = new JLabel();
+        label4 = new JLabel();
+        label5 = new JLabel();
         textField1 = new JTextField();
         passField = new JPasswordField();
         button = new JButton();
@@ -110,7 +119,41 @@ public class Window extends JFrame {
             passField.setText("");
         });
 
+        label4.setText("<html><a href=''>My GitHub</a></html>");    //this label is a hyperlink to my GitHub set next to the login panel
+        label4.setFont(new Font("Times New Roman", Font.PLAIN, 24));
+        label4.setBounds(900, 280, 200, 50);
+        label4.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        label4.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                try {
+                    Desktop.getDesktop().browse(new URI("https://github.com/ArduousKokuhaku52"));
+                }
+                catch (IOException | URISyntaxException e1) {
+                    e1.printStackTrace();
+                }
+            }
+        });
+
+        label5.setText("<html><a href=''>KaishiCo GitHub</a></html>");    //this label is a hyperlink to the KaishiCo organization GitHub set next to the login panel
+        label5.setFont(new Font("Times New Roman", Font.PLAIN, 24));
+        label5.setBounds(875, 360, 200, 50);
+        label5.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        label5.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                try {
+                    Desktop.getDesktop().browse(new URI("https://github.com/KaishiCo"));
+                }
+                catch (IOException | URISyntaxException e1) {
+                    e1.printStackTrace();
+                }
+            }
+        });
+
         this.add(label1);
+        this.add(label4);
+        this.add(label5);
         this.add(panel1);
         panel1.add(label2);
         panel1.add(textField1);
