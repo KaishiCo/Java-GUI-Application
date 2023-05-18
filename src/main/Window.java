@@ -1,5 +1,8 @@
 package main;
 
+import payload.LoginCredential;
+import services.AuthService;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.FocusEvent;
@@ -11,6 +14,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 public class Window extends JFrame {
+    private final AuthService authService = new AuthService();
     private JLabel label1;
     private JLabel label2;
     private JLabel label3;
@@ -110,13 +114,32 @@ public class Window extends JFrame {
         });
         passField.setBounds(10, 170, 200, 25);
 
-        button.setText("Login");    //login button that submits the fields (right now it just clears the text fields)
+        button.setText("Login");    //login button that submits the fields
         button.setFont(new Font("Times New Roman", Font.PLAIN, 24));
         button.setFocusable(false);
         button.setBounds(200, 230, 100, 30);
-        button.addActionListener(e -> {
+        button.addActionListener(e -> { //stores the password in a char array then builds a string to
+            char[] pwd = passField.getPassword();
+            String password = "";
+            StringBuilder sb = new StringBuilder();
+
+            for (char c : pwd) {    //builds the string for the password
+                sb.append(c);
+                password = sb.toString();
+            }
+
+            boolean success = authService.requestLogin(new LoginCredential(textField1.getText(), password));
+            password = null;    //sets password to null in cases where password might be grabbed before garbage collected
+            pwd = null;         //same as above
+
             textField1.setText("");
             passField.setText("");
+            if (success) {  //For now verification will show a dialog box if passed or failed
+                JOptionPane.showMessageDialog(this, "Login Successful");
+            }
+            else {
+                JOptionPane.showMessageDialog(this, "Login Unsuccessful");
+            }
         });
 
         label4.setText("<html><a href=''>My GitHub</a></html>");    //this label is a hyperlink to my GitHub set next to the login panel
