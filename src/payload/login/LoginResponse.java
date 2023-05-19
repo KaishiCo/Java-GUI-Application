@@ -1,4 +1,4 @@
-package payload;
+package payload.login;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 

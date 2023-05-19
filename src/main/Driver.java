@@ -8,8 +8,6 @@ package main;
 public class Driver{
 
     public static void main(String[] args) {
-        Window window = new Window();
-
-        window.loadLoginScreen();   //loads the login screen
+        new Window();
     }
 }

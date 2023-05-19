@@ -1,6 +1,12 @@
+/*
+* 5/19/2023 Because this will have to be dynamic I will come back and change how the labels are made and handled
+* this will mean removing all the JLabel variables and then making it an ArrayList of JLabel objects so they
+* can be added as needed.
+*/
+
 package main;
 
-import payload.LoginCredential;
+import payload.login.LoginCredential;
 import services.AuthService;
 
 import javax.swing.*;
@@ -15,6 +21,8 @@ import java.net.URISyntaxException;
 
 public class Window extends JFrame {
     private final AuthService authService = new AuthService();
+    private final int WINDOW_WIDTH = 1280;
+    private final int WINDOW_HEIGHT = 720;
     private JLabel label1;
     private JLabel label2;
     private JLabel label3;
@@ -33,11 +41,12 @@ public class Window extends JFrame {
 
     public Window() {   //setting default sizes, colors, locations, and closing operations
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
-        this.setSize(1280, 720);
+        this.setSize(WINDOW_WIDTH, WINDOW_HEIGHT);
         this.setLocationRelativeTo(null);
         this.setLayout(null);
         this.setResizable(false);
         this.getContentPane().setBackground(new Color(123, 50, 250));
+        loadLoginScreen();
     }
 
     /*
@@ -45,7 +54,7 @@ public class Window extends JFrame {
     * it is generally frowned upon to use a null layout manager
     * for now I will stick with it but may come back to redesign this at a later date
     */
-    public void loadLoginScreen() { //this method loads resources and sets positions for the login screen
+    private void loadLoginScreen() { //this method loads resources and sets positions for the login screen
         icon = new ImageIcon(this.getClass().getResource("/files/kaishi_logo.png"));
         panel1 = new JPanel();
         label1 = new JLabel();
@@ -108,8 +117,10 @@ public class Window extends JFrame {
 
             @Override
             public void focusLost(FocusEvent e) {
-                passField.setBorder(null);
-                passField.setBackground(Color.white);
+                if (passField != null) {
+                    passField.setBorder(null);
+                    passField.setBackground(Color.white);
+                }
             }
         });
         passField.setBounds(10, 170, 200, 25);
@@ -134,8 +145,9 @@ public class Window extends JFrame {
 
             textField1.setText("");
             passField.setText("");
-            if (success) {  //For now verification will show a dialog box if passed or failed
-                JOptionPane.showMessageDialog(this, "Login Successful");
+            if (success) {  //When successful clears the login screen then loads the main screen
+                clearLoginScreen();
+                loadMainScreen();
             }
             else {
                 JOptionPane.showMessageDialog(this, "Login Unsuccessful");
@@ -185,5 +197,47 @@ public class Window extends JFrame {
         panel1.add(button);
 
         this.setVisible(true);  //needs to be called after adding/removing components to window
+    }
+
+    private void clearLoginScreen() {   //right now this manually removes everything from the window but will be changed when I change to ArrayList storing
+        this.remove(panel1);
+        this.remove(label1);
+        this.remove(label2);
+        this.remove(label3);
+        this.remove(label4);
+        this.remove(label5);
+        this.remove(textField1);
+        this.remove(passField);
+        this.remove(button);
+        panel1 = null;
+        label1 = null;
+        label2 = null;
+        label3 = null;
+        label4 = null;
+        label5 = null;
+        textField1 = null;
+        passField = null;
+        button = null;
+        this.revalidate();
+        this.repaint();
+    }
+
+    private void loadMainScreen() {
+        panel1 = new JPanel();
+        label1 = new JLabel();
+
+        panel1.setLayout(new BoxLayout(panel1, BoxLayout.Y_AXIS));
+        panel1.setBackground(Color.LIGHT_GRAY);
+        panel1.setBounds(0, 0, WINDOW_WIDTH/3, WINDOW_HEIGHT);
+
+        label1.setText("This week's tasks");
+        label1.setFont(new Font("Times New Roman", Font.BOLD, 32));
+        label1.setAlignmentX(0.5f);
+
+        this.add(panel1);
+        panel1.add(label1);
+
+        this.revalidate();  //needs to be called after adding/removing components to window
+        this.repaint();
     }
 }

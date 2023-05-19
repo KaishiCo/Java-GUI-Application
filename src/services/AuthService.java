@@ -1,8 +1,8 @@
 package services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import payload.LoginResponse;
-import payload.LoginCredential;
+import payload.login.LoginResponse;
+import payload.login.LoginCredential;
 import security.AuthToken;
 
 import java.io.IOException;
