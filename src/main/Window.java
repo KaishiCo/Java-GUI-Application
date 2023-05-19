@@ -31,11 +31,6 @@ public class Window extends JFrame {
     private JTextField textField1;
     private JPasswordField passField;
     private JButton button;
-    //v placeholder variables for future implementations
-//    private JTextField textField2;
-//    private JMenuBar menuBar;
-//    private JTextField textField3;
-    //^ placeholder variables for future implementations
     private JPanel panel1;
     private ImageIcon icon;
 
