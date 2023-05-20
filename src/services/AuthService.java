@@ -3,6 +3,7 @@ package services;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import payload.login.LoginResponse;
 import payload.login.LoginCredential;
+import payload.tasks.Task;
 import security.AuthToken;
 
 import java.io.IOException;
@@ -10,6 +11,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.ArrayList;
 
 public class AuthService {
     private ObjectMapper mapper;
@@ -42,5 +44,26 @@ public class AuthService {
             e.printStackTrace();
         }
         return false;
+    }
+
+    public Task[] requestTasks() {
+        mapper = new ObjectMapper();
+
+        HttpClient client = HttpClient.newHttpClient();
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(Endpoint.TASKS))
+                .header("Content-Type", "application/json")
+                .build();
+
+        try {
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+            return mapper.readValue(response.body(), Task[].class);
+        }
+        catch (IOException | InterruptedException e){
+            e.printStackTrace();
+        }
+        return null;
     }
 }
