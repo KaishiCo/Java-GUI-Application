@@ -7,22 +7,22 @@
 package main;
 
 import payload.login.LoginCredential;
+import payload.tasks.Task;
 import services.AuthService;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.FocusEvent;
-import java.awt.event.FocusListener;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import java.awt.event.*;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.util.ArrayList;
 
 public class Window extends JFrame {
     private final AuthService authService = new AuthService();
     private final int WINDOW_WIDTH = 1280;
     private final int WINDOW_HEIGHT = 720;
+    private final Window M_WINDOW = this;
     private JLabel label1;
     private JLabel label2;
     private JLabel label3;
@@ -33,6 +33,9 @@ public class Window extends JFrame {
     private JButton button;
     private JPanel panel1;
     private ImageIcon icon;
+    private JPanel panel2 = null;
+    private JLabel date = null;
+    private JLabel description = null;
 
     public Window() {   //setting default sizes, colors, locations, and closing operations
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -217,20 +220,120 @@ public class Window extends JFrame {
         this.repaint();
     }
 
-    private void loadMainScreen() {
+    private void loadMainScreen() { //loads the main screen with all the current tasks for the week (right now it just shows all tasks)
+        ArrayList<JPanel> currWeekTasks = new ArrayList<>();    //holds list of panels for removing later
         panel1 = new JPanel();
         label1 = new JLabel();
 
-        panel1.setLayout(new BoxLayout(panel1, BoxLayout.Y_AXIS));
+        Task[] tasks = authService.requestTasks();
+
+        panel1.setLayout(new BoxLayout(panel1, BoxLayout.Y_AXIS));  //panel holding the task panels
         panel1.setBackground(Color.LIGHT_GRAY);
         panel1.setBounds(0, 0, WINDOW_WIDTH/3, WINDOW_HEIGHT);
 
-        label1.setText("This week's tasks");
+        label1.setText("This week's tasks");    //Heading for panel1
         label1.setFont(new Font("Times New Roman", Font.BOLD, 32));
         label1.setAlignmentX(0.5f);
 
         this.add(panel1);
         panel1.add(label1);
+
+        for (Task t : tasks) {  //this loop adds all current tasks to a panel and adds functionality when hovered and clicked
+            JPanel task = new JPanel(); //task panel
+            JLabel text = new JLabel(); //task name
+
+            task.setBackground(Color.darkGray);
+            task.setBorder(BorderFactory.createLineBorder(Color.black));
+            task.setMaximumSize(new Dimension(300, 50));
+            task.setAlignmentX(0.5f);
+            task.addMouseListener(new MouseAdapter() {
+                @Override
+                public void mouseClicked(MouseEvent e) {
+                    if (panel2 == null) {   //this only occurs when the first ever task is opened
+                        panel2 = new JPanel();
+                        date = new JLabel();
+                        description = new JLabel();
+
+                        panel2.setLayout(new BoxLayout(panel2, BoxLayout.Y_AXIS));
+                        panel2.setBackground(Color.darkGray);
+                        panel2.setBounds(WINDOW_WIDTH/3, 0, (WINDOW_WIDTH/3)*2, WINDOW_HEIGHT);
+
+                        M_WINDOW.add(panel2);
+
+                        date.setText(t.getDate());
+                        date.setFont(new Font("Times New Roman", Font.BOLD, 32));
+                        date.setForeground(Color.black);
+                        date.setAlignmentX(0.5f);
+                        panel2.add(date);
+                        panel2.add(Box.createVerticalStrut(30));
+
+                        description.setText(t.getDescription());
+                        description.setFont(new Font("Times New Roman", Font.PLAIN, 24));
+                        description.setForeground(Color.black);
+                        description.setAlignmentX(0.5f);
+                        panel2.add(description);
+
+                        M_WINDOW.revalidate();
+                        M_WINDOW.repaint();
+                    }
+                    else {  //this probably adds a couple steps unnecessarily but ensures the extended task panel is created properly
+                        M_WINDOW.remove(panel2);
+                        M_WINDOW.revalidate();
+                        M_WINDOW.repaint();
+                        panel2 = null;
+                        date = null;
+                        description = null;
+
+                        panel2 = new JPanel();
+                        date = new JLabel();
+                        description = new JLabel();
+
+                        panel2.setLayout(new BoxLayout(panel2, BoxLayout.Y_AXIS));
+                        panel2.setBackground(Color.darkGray);
+                        panel2.setBounds(WINDOW_WIDTH/3, 0, (WINDOW_WIDTH/3)*2, WINDOW_HEIGHT);
+
+                        M_WINDOW.add(panel2);
+
+                        date.setText(t.getDate());
+                        date.setFont(new Font("Times New Roman", Font.BOLD, 32));
+                        date.setForeground(Color.black);
+                        date.setAlignmentX(0.5f);
+                        panel2.add(date);
+                        panel2.add(Box.createVerticalStrut(30));
+
+                        description.setText(t.getDescription());
+                        description.setFont(new Font("Times New Roman", Font.PLAIN, 24));
+                        description.setForeground(Color.black);
+                        description.setAlignmentX(0.5f);
+                        panel2.add(description);
+
+                        M_WINDOW.revalidate();
+                        M_WINDOW.repaint();
+                    }
+                }
+
+                @Override
+                public void mouseEntered(MouseEvent e) {    //cyan border around task when hovered with a mouse
+                    task.setBorder(BorderFactory.createLineBorder(Color.CYAN));
+                }
+
+                @Override
+                public void mouseExited(MouseEvent e) {     //returns to normal when not hovered
+                    task.setBorder(BorderFactory.createLineBorder(Color.black));
+                }
+            });
+            currWeekTasks.add(task);
+            panel1.add(task);
+            panel1.add(Box.createVerticalStrut(10));    //adds spacing between tasks
+
+            text.setText(t.getName());  //sets the name of the task
+            text.setFont(new Font("Times New Roman", Font.PLAIN, 24));
+            text.setForeground(Color.black);
+            text.setHorizontalAlignment(SwingConstants.CENTER);
+            text.setVerticalAlignment(SwingConstants.CENTER);
+
+            task.add(text);
+        }
 
         this.revalidate();  //needs to be called after adding/removing components to window
         this.repaint();
