@@ -1,5 +1,5 @@
 # Java-GUI-Application
-## NOTE
+## Note
 - The API that goes with this project can be found here: [TasksAPI](https://github.com/KaishiCo/tasks)
 - The API is created and maintained by Marc ([umizu](https://github.com/umizu))
 ------------------------------------------------------
