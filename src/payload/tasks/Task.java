@@ -2,21 +2,22 @@ package payload.tasks;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.Date;
 import java.util.UUID;
 
 public class Task {     //Class to store the response of a task retrieved from the API
     @JsonProperty("id")
-    private String id;
+    private UUID id;
     @JsonProperty("name")
     private String name;
     @JsonProperty("date")
-    private String date;
+    private Date date;
     @JsonProperty("description")
     private String description;
     @JsonProperty("userId")
-    private String userId;
+    private UUID userId;
 
-    public String getId() {
+    public UUID getId() {
         return id;
     }
 
@@ -24,7 +25,7 @@ public class Task {     //Class to store the response of a task retrieved from t
         return name;
     }
 
-    public String getDate() {
+    public Date getDate() {
         return date;
     }
 
@@ -32,7 +33,7 @@ public class Task {     //Class to store the response of a task retrieved from t
         return description;
     }
 
-    public String getUserId(){
+    public UUID getUserId(){
         return userId;
     }
 }
