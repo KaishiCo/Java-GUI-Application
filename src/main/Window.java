@@ -260,7 +260,7 @@ public class Window extends JFrame {
 
                         M_WINDOW.add(panel2);
 
-                        date.setText(t.getDate());
+                        date.setText(t.getDate().toString());
                         date.setFont(new Font("Times New Roman", Font.BOLD, 32));
                         date.setForeground(Color.black);
                         date.setAlignmentX(0.5f);
@@ -294,7 +294,7 @@ public class Window extends JFrame {
 
                         M_WINDOW.add(panel2);
 
-                        date.setText(t.getDate());
+                        date.setText(t.getDate().toString());
                         date.setFont(new Font("Times New Roman", Font.BOLD, 32));
                         date.setForeground(Color.black);
                         date.setAlignmentX(0.5f);
