@@ -11,7 +11,6 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.ArrayList;
 
 public class AuthService {
     private ObjectMapper mapper;
@@ -53,13 +52,15 @@ public class AuthService {
 
         HttpRequest request = HttpRequest.newBuilder()
                 .uri(URI.create(Endpoint.TASKS))
-                .header("Content-Type", "application/json")
-                .build();
+                .header("Authorization", "Bearer " + AuthToken.getToken())
+                .build();   //Get request to the API; requires Authorization , Bearer {Token} key-value pair
 
         try {
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
 
-            return mapper.readValue(response.body(), Task[].class);
+            if (response.statusCode() != 401) { //401 indicates unauthorized token (right now just returns null and isn't handled)
+                return mapper.readValue(response.body(), Task[].class);
+            }
         }
         catch (IOException | InterruptedException e){
             e.printStackTrace();
