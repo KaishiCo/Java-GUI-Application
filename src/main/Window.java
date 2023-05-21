@@ -1,9 +1,3 @@
-/*
-* 5/19/2023 Because this will have to be dynamic I will come back and change how the labels are made and handled
-* this will mean removing all the JLabel variables and then making it an ArrayList of JLabel objects so they
-* can be added as needed.
-*/
-
 package main;
 
 import payload.login.LoginCredential;
@@ -23,19 +17,9 @@ public class Window extends JFrame {
     private final int WINDOW_WIDTH = 1280;
     private final int WINDOW_HEIGHT = 720;
     private final Window M_WINDOW = this;
-    private JLabel label1;
-    private JLabel label2;
-    private JLabel label3;
-    private JLabel label4;
-    private JLabel label5;
-    private JTextField textField1;
-    private JPasswordField passField;
-    private JButton button;
-    private JPanel panel1;
-    private ImageIcon icon;
-    private JPanel panel2 = null;
-    private JLabel date = null;
-    private JLabel description = null;
+    private final ArrayList<JLabel> labels = new ArrayList<>();
+    private final ArrayList<JPanel> panels = new ArrayList<>();
+    private JPanel extendedTaskPanel = null;
 
     public Window() {   //setting default sizes, colors, locations, and closing operations
         this.setDefaultCloseOperation(EXIT_ON_CLOSE);
@@ -53,31 +37,34 @@ public class Window extends JFrame {
     * for now I will stick with it but may come back to redesign this at a later date
     */
     private void loadLoginScreen() { //this method loads resources and sets positions for the login screen
-        icon = new ImageIcon(this.getClass().getResource("/files/kaishi_logo.png"));
-        panel1 = new JPanel();
-        label1 = new JLabel();
-        label2 = new JLabel();
-        label3 = new JLabel();
-        label4 = new JLabel();
-        label5 = new JLabel();
-        textField1 = new JTextField();
-        passField = new JPasswordField();
-        button = new JButton();
+        ImageIcon icon = new ImageIcon(this.getClass().getResource("/files/kaishi_logo.png"));
+        JPanel panel = new JPanel();
+        JLabel label = new JLabel();
+        JTextField textField1 = new JTextField();
+        JPasswordField passField = new JPasswordField();
+        JButton button = new JButton();
 
-        label1.setText("Welcome to the KaishiCo");
-        label1.setFont(new Font("Times New Roman", Font.PLAIN, 32));
-        label1.setIcon(icon);
-        label1.setHorizontalTextPosition(JLabel.RIGHT);
-        label1.setVerticalTextPosition(JLabel.CENTER);
-        label1.setBounds(360, -150, 500, 500);  //seems the default is around the (x:0, y:frame's center) will mess with later
+        label.setText("Welcome to the KaishiCo");
+        label.setFont(new Font("Times New Roman", Font.PLAIN, 32));
+        label.setIcon(icon);
+        label.setHorizontalTextPosition(JLabel.RIGHT);
+        label.setVerticalTextPosition(JLabel.CENTER);
+        label.setBounds(360, -150, 500, 500);  //seems the default is around the (x:0, y:frame's center) will mess with later
+        labels.add(label);
+        this.add(label);
 
-        panel1.setBackground(Color.GRAY);  //this panel will hold the login section
-        panel1.setBounds(70, 220, 500, 300);
-        panel1.setLayout(null);
+        panel.setBackground(Color.GRAY);  //this panel will hold the login section
+        panel.setBounds(70, 220, 500, 300);
+        panel.setLayout(null);
+        panels.add(panel);
+        this.add(panel);
 
-        label2.setText("Username"); //Username section for the login
-        label2.setFont(new Font("Times New Roman", Font.PLAIN, 24));
-        label2.setBounds(10, 20, 100, 50);
+        label = new JLabel();
+        label.setText("Username"); //Username section for the login
+        label.setFont(new Font("Times New Roman", Font.PLAIN, 24));
+        label.setBounds(10, 20, 100, 50);
+        labels.add(label);
+        panel.add(label);
 
         textField1.setColumns(30);   //text field for Username
         textField1.setEditable(true);
@@ -97,10 +84,14 @@ public class Window extends JFrame {
             }
         });
         textField1.setBounds(10, 70, 200, 25);
+        panel.add(textField1);
 
-        label3.setText("Password"); //Password section for the login
-        label3.setFont(new Font("Times New Roman", Font.PLAIN, 24));
-        label3.setBounds(10, 120, 100, 50);
+        label = new JLabel();
+        label.setText("Password"); //Password section for the login
+        label.setFont(new Font("Times New Roman", Font.PLAIN, 24));
+        label.setBounds(10, 120, 100, 50);
+        labels.add(label);
+        panel.add(label);
 
         passField.setColumns(30);   //password field for Password
         passField.setEditable(true);
@@ -122,6 +113,7 @@ public class Window extends JFrame {
             }
         });
         passField.setBounds(10, 170, 200, 25);
+        panel.add(passField);
 
         button.setText("Login");    //login button that submits the fields
         button.setFont(new Font("Times New Roman", Font.PLAIN, 24));
@@ -151,12 +143,14 @@ public class Window extends JFrame {
                 JOptionPane.showMessageDialog(this, "Login Unsuccessful");
             }
         });
+        panel.add(button);
 
-        label4.setText("<html><a href=''>My GitHub</a></html>");    //this label is a hyperlink to my GitHub set next to the login panel
-        label4.setFont(new Font("Times New Roman", Font.PLAIN, 24));
-        label4.setBounds(900, 280, 200, 50);
-        label4.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        label4.addMouseListener(new MouseAdapter() {
+        label = new JLabel();
+        label.setText("<html><a href=''>My GitHub</a></html>");    //this label is a hyperlink to my GitHub set next to the login panel
+        label.setFont(new Font("Times New Roman", Font.PLAIN, 24));
+        label.setBounds(900, 280, 200, 50);
+        label.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        label.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 try {
@@ -167,12 +161,15 @@ public class Window extends JFrame {
                 }
             }
         });
+        labels.add(label);
+        this.add(label);
 
-        label5.setText("<html><a href=''>KaishiCo GitHub</a></html>");    //this label is a hyperlink to the KaishiCo organization GitHub set next to the login panel
-        label5.setFont(new Font("Times New Roman", Font.PLAIN, 24));
-        label5.setBounds(875, 360, 200, 50);
-        label5.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
-        label5.addMouseListener(new MouseAdapter() {
+        label = new JLabel();
+        label.setText("<html><a href=''>KaishiCo GitHub</a></html>");    //this label is a hyperlink to the KaishiCo organization GitHub set next to the login panel
+        label.setFont(new Font("Times New Roman", Font.PLAIN, 24));
+        label.setBounds(875, 360, 200, 50);
+        label.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        label.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 try {
@@ -183,59 +180,41 @@ public class Window extends JFrame {
                 }
             }
         });
-
-        this.add(label1);
-        this.add(label4);
-        this.add(label5);
-        this.add(panel1);
-        panel1.add(label2);
-        panel1.add(textField1);
-        panel1.add(label3);
-        panel1.add(passField);
-        panel1.add(button);
+        labels.add(label);
+        this.add(label);
 
         this.setVisible(true);  //needs to be called after adding/removing components to window
     }
 
     private void clearLoginScreen() {   //right now this manually removes everything from the window but will be changed when I change to ArrayList storing
-        this.remove(panel1);
-        this.remove(label1);
-        this.remove(label2);
-        this.remove(label3);
-        this.remove(label4);
-        this.remove(label5);
-        this.remove(textField1);
-        this.remove(passField);
-        this.remove(button);
-        panel1 = null;
-        label1 = null;
-        label2 = null;
-        label3 = null;
-        label4 = null;
-        label5 = null;
-        textField1 = null;
-        passField = null;
-        button = null;
+        for(JPanel e : panels) {
+            this.remove(e);
+        }
+        for (JLabel e : labels) {
+            this.remove(e);
+        }
+        panels.clear();
+        labels.clear();
         this.revalidate();
         this.repaint();
     }
 
     private void loadMainScreen() { //loads the main screen with all the current tasks for the week (right now it just shows all tasks)
-        ArrayList<JPanel> currWeekTasks = new ArrayList<>();    //holds list of panels for removing later
-        panel1 = new JPanel();
-        label1 = new JLabel();
+        JPanel panel1 = new JPanel();
+        JLabel label1 = new JLabel();
 
         Task[] tasks = authService.requestTasks();
 
         panel1.setLayout(new BoxLayout(panel1, BoxLayout.Y_AXIS));  //panel holding the task panels
         panel1.setBackground(Color.LIGHT_GRAY);
         panel1.setBounds(0, 0, WINDOW_WIDTH/3, WINDOW_HEIGHT);
+        panels.add(panel1);
+        this.add(panel1);
 
         label1.setText("This week's tasks");    //Heading for panel1
         label1.setFont(new Font("Times New Roman", Font.BOLD, 32));
         label1.setAlignmentX(0.5f);
-
-        this.add(panel1);
+        labels.add(label1);
         panel1.add(label1);
 
         for (Task t : tasks) {  //this loop adds all current tasks to a panel and adds functionality when hovered and clicked
@@ -249,63 +228,58 @@ public class Window extends JFrame {
             task.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
-                    if (panel2 == null) {   //this only occurs when the first ever task is opened
-                        panel2 = new JPanel();
-                        date = new JLabel();
-                        description = new JLabel();
+                    if (extendedTaskPanel == null) {   //this only occurs when the first ever task is opened
+                        extendedTaskPanel = new JPanel();
+                        JLabel date = new JLabel();
+                        JLabel description = new JLabel();
 
-                        panel2.setLayout(new BoxLayout(panel2, BoxLayout.Y_AXIS));
-                        panel2.setBackground(Color.darkGray);
-                        panel2.setBounds(WINDOW_WIDTH/3, 0, (WINDOW_WIDTH/3)*2, WINDOW_HEIGHT);
+                        extendedTaskPanel.setLayout(new BoxLayout(extendedTaskPanel, BoxLayout.Y_AXIS));
+                        extendedTaskPanel.setBackground(Color.darkGray);
+                        extendedTaskPanel.setBounds(WINDOW_WIDTH/3, 0, (WINDOW_WIDTH/3)*2, WINDOW_HEIGHT);
 
-                        M_WINDOW.add(panel2);
+                        M_WINDOW.add(extendedTaskPanel);
 
                         date.setText(t.getDate().toString());
                         date.setFont(new Font("Times New Roman", Font.BOLD, 32));
                         date.setForeground(Color.black);
                         date.setAlignmentX(0.5f);
-                        panel2.add(date);
-                        panel2.add(Box.createVerticalStrut(30));
+                        extendedTaskPanel.add(date);
+                        extendedTaskPanel.add(Box.createVerticalStrut(30));
 
                         description.setText(t.getDescription());
                         description.setFont(new Font("Times New Roman", Font.PLAIN, 24));
                         description.setForeground(Color.black);
                         description.setAlignmentX(0.5f);
-                        panel2.add(description);
+                        extendedTaskPanel.add(description);
 
                         M_WINDOW.revalidate();
                         M_WINDOW.repaint();
                     }
                     else {  //this probably adds a couple steps unnecessarily but ensures the extended task panel is created properly
-                        M_WINDOW.remove(panel2);
-                        M_WINDOW.revalidate();
-                        M_WINDOW.repaint();
-                        panel2 = null;
-                        date = null;
-                        description = null;
+                        M_WINDOW.remove(extendedTaskPanel);
 
-                        panel2 = new JPanel();
-                        date = new JLabel();
-                        description = new JLabel();
+                        extendedTaskPanel = new JPanel();
+                        JLabel date = new JLabel();
+                        JLabel description = new JLabel();
 
-                        panel2.setLayout(new BoxLayout(panel2, BoxLayout.Y_AXIS));
-                        panel2.setBackground(Color.darkGray);
-                        panel2.setBounds(WINDOW_WIDTH/3, 0, (WINDOW_WIDTH/3)*2, WINDOW_HEIGHT);
+                        extendedTaskPanel.setLayout(new BoxLayout(extendedTaskPanel, BoxLayout.Y_AXIS));
+                        extendedTaskPanel.setBackground(Color.darkGray);
+                        extendedTaskPanel.setBounds(WINDOW_WIDTH/3, 0, (WINDOW_WIDTH/3)*2, WINDOW_HEIGHT);
 
-                        M_WINDOW.add(panel2);
+                        M_WINDOW.add(extendedTaskPanel);
 
                         date.setText(t.getDate().toString());
                         date.setFont(new Font("Times New Roman", Font.BOLD, 32));
                         date.setForeground(Color.black);
                         date.setAlignmentX(0.5f);
-                        panel2.add(date);
-                        panel2.add(Box.createVerticalStrut(30));
+                        extendedTaskPanel.add(date);
+                        extendedTaskPanel.add(Box.createVerticalStrut(30));
 
                         description.setText(t.getDescription());
                         description.setFont(new Font("Times New Roman", Font.PLAIN, 24));
                         description.setForeground(Color.black);
                         description.setAlignmentX(0.5f);
-                        panel2.add(description);
+                        extendedTaskPanel.add(description);
 
                         M_WINDOW.revalidate();
                         M_WINDOW.repaint();
@@ -322,7 +296,7 @@ public class Window extends JFrame {
                     task.setBorder(BorderFactory.createLineBorder(Color.black));
                 }
             });
-            currWeekTasks.add(task);
+            panels.add(task);
             panel1.add(task);
             panel1.add(Box.createVerticalStrut(10));    //adds spacing between tasks
 
