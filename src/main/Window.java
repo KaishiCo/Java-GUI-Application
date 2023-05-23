@@ -2,6 +2,7 @@ package main;
 
 import payload.login.LoginCredential;
 import payload.tasks.Task;
+import security.AuthToken;
 import services.AuthService;
 
 import javax.swing.*;
@@ -200,16 +201,17 @@ public class Window extends JFrame {
     }
 
     private void loadMainScreen() { //loads the main screen with all the current tasks for the week (right now it just shows all tasks)
+        JPanel createTaskPanel = new JPanel();
         JPanel panel1 = new JPanel();
         JLabel label1 = new JLabel();
-
-        Task[] tasks = authService.requestTasks();
 
         panel1.setLayout(new BoxLayout(panel1, BoxLayout.Y_AXIS));  //panel holding the task panels
         panel1.setBackground(Color.LIGHT_GRAY);
         panel1.setBounds(0, 0, WINDOW_WIDTH/3, WINDOW_HEIGHT);
+        JScrollPane scrollFrame = new JScrollPane(panel1);  //makes the panel with all the tasks scrollable ? will test
+        scrollFrame.setBounds(0, 0, WINDOW_WIDTH/3, WINDOW_HEIGHT);
         panels.add(panel1);
-        this.add(panel1);
+        this.add(scrollFrame);
 
         label1.setText("This week's tasks");    //Heading for panel1
         label1.setFont(new Font("Times New Roman", Font.BOLD, 32));
@@ -217,6 +219,43 @@ public class Window extends JFrame {
         labels.add(label1);
         panel1.add(label1);
 
+        createAndAddTaskPanels(authService.requestTasks(), panel1);    //adds all task panels in the database
+
+        createTaskPanel.setBackground(Color.darkGray);
+        createTaskPanel.setBorder(BorderFactory.createLineBorder(Color.black));
+        createTaskPanel.setMaximumSize(new Dimension(300, 50));
+        createTaskPanel.setAlignmentX(0.5f);
+        createTaskPanel.addMouseListener(new MouseAdapter() {
+            @Override
+            public void mouseClicked(MouseEvent e) {
+                openAddWindow();
+            }
+
+            @Override
+            public void mouseEntered(MouseEvent e) {
+                createTaskPanel.setBorder(BorderFactory.createLineBorder(Color.CYAN));
+            }
+
+            @Override
+            public void mouseExited(MouseEvent e) {
+                createTaskPanel.setBorder(BorderFactory.createLineBorder(Color.black));
+            }
+        });
+        panel1.add(createTaskPanel);
+
+        label1 = new JLabel();
+        label1.setText("Create New Task");
+        label1.setFont(new Font("Times New Roman", Font.PLAIN, 24));
+        label1.setForeground(Color.black);
+        label1.setHorizontalAlignment(SwingConstants.CENTER);
+        label1.setVerticalAlignment(SwingConstants.CENTER);
+        createTaskPanel.add(label1);
+
+        this.revalidate();  //needs to be called after adding/removing components to window
+        this.repaint();
+    }
+
+    public void createAndAddTaskPanels(Task[] tasks, JPanel taskPanel) {
         for (Task t : tasks) {  //this loop adds all current tasks to a panel and adds functionality when hovered and clicked
             JPanel task = new JPanel(); //task panel
             JLabel text = new JLabel(); //task name
@@ -228,62 +267,66 @@ public class Window extends JFrame {
             task.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
-                    if (extendedTaskPanel == null) {   //this only occurs when the first ever task is opened
-                        extendedTaskPanel = new JPanel();
-                        JLabel date = new JLabel();
-                        JLabel description = new JLabel();
-
-                        extendedTaskPanel.setLayout(new BoxLayout(extendedTaskPanel, BoxLayout.Y_AXIS));
-                        extendedTaskPanel.setBackground(Color.darkGray);
-                        extendedTaskPanel.setBounds(WINDOW_WIDTH/3, 0, (WINDOW_WIDTH/3)*2, WINDOW_HEIGHT);
-
-                        M_WINDOW.add(extendedTaskPanel);
-
-                        date.setText(t.getDate().toString());
-                        date.setFont(new Font("Times New Roman", Font.BOLD, 32));
-                        date.setForeground(Color.black);
-                        date.setAlignmentX(0.5f);
-                        extendedTaskPanel.add(date);
-                        extendedTaskPanel.add(Box.createVerticalStrut(30));
-
-                        description.setText(t.getDescription());
-                        description.setFont(new Font("Times New Roman", Font.PLAIN, 24));
-                        description.setForeground(Color.black);
-                        description.setAlignmentX(0.5f);
-                        extendedTaskPanel.add(description);
-
-                        M_WINDOW.revalidate();
-                        M_WINDOW.repaint();
-                    }
-                    else {  //this probably adds a couple steps unnecessarily but ensures the extended task panel is created properly
+                    if (extendedTaskPanel != null) {   //removes old panel if one was opened before
                         M_WINDOW.remove(extendedTaskPanel);
-
-                        extendedTaskPanel = new JPanel();
-                        JLabel date = new JLabel();
-                        JLabel description = new JLabel();
-
-                        extendedTaskPanel.setLayout(new BoxLayout(extendedTaskPanel, BoxLayout.Y_AXIS));
-                        extendedTaskPanel.setBackground(Color.darkGray);
-                        extendedTaskPanel.setBounds(WINDOW_WIDTH/3, 0, (WINDOW_WIDTH/3)*2, WINDOW_HEIGHT);
-
-                        M_WINDOW.add(extendedTaskPanel);
-
-                        date.setText(t.getDate().toString());
-                        date.setFont(new Font("Times New Roman", Font.BOLD, 32));
-                        date.setForeground(Color.black);
-                        date.setAlignmentX(0.5f);
-                        extendedTaskPanel.add(date);
-                        extendedTaskPanel.add(Box.createVerticalStrut(30));
-
-                        description.setText(t.getDescription());
-                        description.setFont(new Font("Times New Roman", Font.PLAIN, 24));
-                        description.setForeground(Color.black);
-                        description.setAlignmentX(0.5f);
-                        extendedTaskPanel.add(description);
-
-                        M_WINDOW.revalidate();
-                        M_WINDOW.repaint();
                     }
+                    extendedTaskPanel = new JPanel();
+                    JLabel date = new JLabel();
+                    JLabel description = new JLabel();
+                    JPanel taskOptions = new JPanel();
+                    JButton editTask = new JButton();
+                    JButton deleteTask = new JButton();
+
+                    extendedTaskPanel.setLayout(new BoxLayout(extendedTaskPanel, BoxLayout.Y_AXIS));
+                    extendedTaskPanel.setBackground(Color.darkGray);
+                    extendedTaskPanel.setBounds(WINDOW_WIDTH/3, 0, (WINDOW_WIDTH/3)*2, WINDOW_HEIGHT);
+
+                    M_WINDOW.add(extendedTaskPanel);
+
+                    date.setText(t.getDate().toString());
+                    date.setFont(new Font("Times New Roman", Font.BOLD, 32));
+                    date.setForeground(Color.black);
+                    date.setAlignmentX(0.5f);
+                    extendedTaskPanel.add(date);
+                    extendedTaskPanel.add(Box.createVerticalStrut(30));
+
+                    description.setText(t.getDescription());
+                    description.setFont(new Font("Times New Roman", Font.PLAIN, 24));
+                    description.setForeground(Color.black);
+                    description.setAlignmentX(0.5f);
+                    extendedTaskPanel.add(description);
+                    extendedTaskPanel.add(Box.createVerticalGlue());
+
+                    taskOptions.setLayout(new BoxLayout(taskOptions, BoxLayout.X_AXIS));
+                    taskOptions.setBackground(Color.darkGray);
+                    taskOptions.setAlignmentX(0.5f);
+                    extendedTaskPanel.add(taskOptions);
+
+                    editTask.setText("Edit");
+                    editTask.setFont(new Font("Times New Roman", Font.PLAIN, 24));
+                    editTask.setFocusable(false);
+                    editTask.setMaximumSize(new Dimension(100, 30));
+                    editTask.setAlignmentY(0.5f);
+                    editTask.addActionListener(b -> openEditWindow());
+                    if (AuthToken.getUserId() != t.getUserId()) {
+                        editTask.setEnabled(false);
+                    }
+                    taskOptions.add(editTask);
+                    taskOptions.add(Box.createHorizontalStrut(20));
+
+                    deleteTask.setText("Delete");
+                    deleteTask.setFont(new Font("Times New Roman", Font.PLAIN, 24));
+                    deleteTask.setFocusable(false);
+                    deleteTask.setMaximumSize(new Dimension(100, 30));
+                    deleteTask.setAlignmentY(0.5f);
+                    deleteTask.addActionListener(b -> authService.deleteTask(t.getId()));
+                    if (AuthToken.getUserId() != t.getUserId()) {
+                        deleteTask.setEnabled(false);
+                    }
+                    taskOptions.add(deleteTask);
+
+                    M_WINDOW.revalidate();
+                    M_WINDOW.repaint();
                 }
 
                 @Override
@@ -297,8 +340,8 @@ public class Window extends JFrame {
                 }
             });
             panels.add(task);
-            panel1.add(task);
-            panel1.add(Box.createVerticalStrut(10));    //adds spacing between tasks
+            taskPanel.add(task);
+            taskPanel.add(Box.createVerticalStrut(10));    //adds spacing between tasks
 
             text.setText(t.getName());  //sets the name of the task
             text.setFont(new Font("Times New Roman", Font.PLAIN, 24));
@@ -308,8 +351,13 @@ public class Window extends JFrame {
 
             task.add(text);
         }
+    }
 
-        this.revalidate();  //needs to be called after adding/removing components to window
-        this.repaint();
+    public void openEditWindow() {
+
+    }
+
+    public void openAddWindow() {
+
     }
 }
