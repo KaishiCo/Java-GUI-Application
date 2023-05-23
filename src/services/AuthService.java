@@ -11,6 +11,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.UUID;
 
 public class AuthService {
     private ObjectMapper mapper;
@@ -67,5 +68,9 @@ public class AuthService {
             e.printStackTrace();
         }
         return null;
+    }
+
+    public boolean deleteTask(UUID id) {    //call to delete the task
+        return false;
     }
 }
