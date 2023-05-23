@@ -37,6 +37,7 @@ public class AuthService {
             else {  //else returns a 200 status code in which case the response is parsed back into a Java class and the AuthToken is stored in memory
                 LoginResponse loginResponse = mapper.readValue(response.body(), LoginResponse.class);
                 AuthToken.setAccessToken(loginResponse.getAccessToken(), loginResponse.getExpiresIn());
+                AuthToken.setUserId(loginResponse.getUserId());
                 return true;
             }
         } catch (IOException | InterruptedException e) {
