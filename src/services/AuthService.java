@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import payload.login.LoginResponse;
 import payload.login.LoginCredential;
 import payload.tasks.Task;
+import payload.tasks.TaskRequest;
 import security.AuthToken;
 
 import java.io.IOException;
@@ -70,7 +71,84 @@ public class AuthService {
         return null;
     }
 
-    public boolean deleteTask(UUID id) {    //call to delete the task
+    public boolean deleteTask(UUID taskId) {    //call to delete the task
+        mapper = new ObjectMapper();
+
+        HttpClient client = HttpClient.newHttpClient();
+
+        HttpRequest request = HttpRequest.newBuilder()
+                .uri(URI.create(Endpoint.TASKS + "/" + taskId))
+                .header("Authorization", "Bearer " + AuthToken.getToken())
+                .DELETE()
+                .build();   //builds delete request
+
+        try {
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() == 200) { //200 represents OK to delete
+                return true;
+            }
+        }
+        catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public boolean editTask(TaskRequest task, UUID taskId) {    //calls a PUT request to API to edit task
+        mapper = new ObjectMapper();
+
+        try {
+            String taskrequest = mapper.writeValueAsString(task);
+
+            HttpClient client = HttpClient.newHttpClient();
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(Endpoint.TASKS + "/" + taskId))
+                    .header("Content-Type", "application/json")
+                    .header("Authorization", "Bearer " + AuthToken.getToken())
+                    .PUT(HttpRequest.BodyPublishers.ofString(taskrequest))
+                    .build();   //building put request
+
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() == 200) {
+                return true;
+            }
+        }
+        catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+
+    public boolean addTask(TaskRequest task) {  //calls a POST request to API to add a task
+        mapper = new ObjectMapper();
+
+        try {
+            String taskrequest = mapper.writeValueAsString(task);
+
+            HttpClient client = HttpClient.newHttpClient();
+
+            HttpRequest request = HttpRequest.newBuilder()
+                    .uri(URI.create(Endpoint.TASKS))
+                    .header("Content-Type", "application/json")
+                    .header("Authorization", "Bearer " + AuthToken.getToken())
+                    .POST(HttpRequest.BodyPublishers.ofString(taskrequest))
+                    .build();
+
+            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+
+            if (response.statusCode() == 201) {
+                return true;
+            }
+            else {
+                System.out.println(response.statusCode());
+            }
+        }
+        catch (IOException | InterruptedException e) {
+            e.printStackTrace();
+        }
         return false;
     }
 }
