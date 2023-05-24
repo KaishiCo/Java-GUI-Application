@@ -215,7 +215,7 @@ public class Window extends JFrame {
         panel1.setBackground(Color.LIGHT_GRAY);
         panel1.setBounds(0, 0, WINDOW_WIDTH/3, WINDOW_HEIGHT);
         scrollFrame = new JScrollPane(panel1);  //makes the panel with all the tasks scrollable ? will test
-        scrollFrame.setBounds(0, 0, WINDOW_WIDTH/3, WINDOW_HEIGHT);
+        scrollFrame.setBounds(0, 0, WINDOW_WIDTH/3, WINDOW_HEIGHT - 38);
         panels.add(panel1);
         this.add(scrollFrame);
 
