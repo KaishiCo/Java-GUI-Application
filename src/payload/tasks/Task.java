@@ -16,6 +16,8 @@ public class Task {     //Class to store the response of a task retrieved from t
     private String description;
     @JsonProperty("userId")
     private UUID userId;
+    @JsonProperty("isCompleted")
+    private boolean isCompleted;
 
     public UUID getId() {
         return id;
@@ -35,5 +37,9 @@ public class Task {     //Class to store the response of a task retrieved from t
 
     public UUID getUserId(){
         return userId;
+    }
+
+    public boolean getIsCompleted() {
+        return isCompleted;
     }
 }
