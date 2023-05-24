@@ -2,6 +2,7 @@ package main;
 
 import payload.login.LoginCredential;
 import payload.tasks.Task;
+import payload.tasks.TaskRequest;
 import security.AuthToken;
 import services.AuthService;
 
@@ -12,6 +13,7 @@ import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
+import java.util.UUID;
 
 public class Window extends JFrame {
     private final AuthService authService = new AuthService();
@@ -20,6 +22,7 @@ public class Window extends JFrame {
     private final Window M_WINDOW = this;
     private final ArrayList<JLabel> labels = new ArrayList<>();
     private final ArrayList<JPanel> panels = new ArrayList<>();
+    private JScrollPane scrollFrame;
     private JPanel extendedTaskPanel = null;
 
     public Window() {   //setting default sizes, colors, locations, and closing operations
@@ -137,7 +140,7 @@ public class Window extends JFrame {
             textField1.setText("");
             passField.setText("");
             if (success) {  //When successful clears the login screen then loads the main screen
-                clearLoginScreen();
+                clearScreen();
                 loadMainScreen();
             }
             else {
@@ -187,12 +190,15 @@ public class Window extends JFrame {
         this.setVisible(true);  //needs to be called after adding/removing components to window
     }
 
-    private void clearLoginScreen() {   //right now this manually removes everything from the window but will be changed when I change to ArrayList storing
+    private void clearScreen() {   //right now this manually removes everything from the window but will be changed when I change to ArrayList storing
         for(JPanel e : panels) {
             this.remove(e);
         }
         for (JLabel e : labels) {
             this.remove(e);
+        }
+        if (scrollFrame != null) {
+            this.remove(scrollFrame);
         }
         panels.clear();
         labels.clear();
@@ -208,7 +214,7 @@ public class Window extends JFrame {
         panel1.setLayout(new BoxLayout(panel1, BoxLayout.Y_AXIS));  //panel holding the task panels
         panel1.setBackground(Color.LIGHT_GRAY);
         panel1.setBounds(0, 0, WINDOW_WIDTH/3, WINDOW_HEIGHT);
-        JScrollPane scrollFrame = new JScrollPane(panel1);  //makes the panel with all the tasks scrollable ? will test
+        scrollFrame = new JScrollPane(panel1);  //makes the panel with all the tasks scrollable ? will test
         scrollFrame.setBounds(0, 0, WINDOW_WIDTH/3, WINDOW_HEIGHT);
         panels.add(panel1);
         this.add(scrollFrame);
@@ -277,52 +283,59 @@ public class Window extends JFrame {
                     JButton editTask = new JButton();
                     JButton deleteTask = new JButton();
 
-                    extendedTaskPanel.setLayout(new BoxLayout(extendedTaskPanel, BoxLayout.Y_AXIS));
+                    extendedTaskPanel.setLayout(new BoxLayout(extendedTaskPanel, BoxLayout.Y_AXIS));    //this panel holds all task information
                     extendedTaskPanel.setBackground(Color.darkGray);
                     extendedTaskPanel.setBounds(WINDOW_WIDTH/3, 0, (WINDOW_WIDTH/3)*2, WINDOW_HEIGHT);
 
                     M_WINDOW.add(extendedTaskPanel);
 
-                    date.setText(t.getDate().toString());
+                    date.setText(t.getDate().toString());   //date text
                     date.setFont(new Font("Times New Roman", Font.BOLD, 32));
                     date.setForeground(Color.black);
                     date.setAlignmentX(0.5f);
                     extendedTaskPanel.add(date);
                     extendedTaskPanel.add(Box.createVerticalStrut(30));
 
-                    description.setText(t.getDescription());
+                    description.setText(t.getDescription());    //description text
                     description.setFont(new Font("Times New Roman", Font.PLAIN, 24));
                     description.setForeground(Color.black);
                     description.setAlignmentX(0.5f);
                     extendedTaskPanel.add(description);
                     extendedTaskPanel.add(Box.createVerticalGlue());
 
-                    taskOptions.setLayout(new BoxLayout(taskOptions, BoxLayout.X_AXIS));
+                    taskOptions.setLayout(new BoxLayout(taskOptions, BoxLayout.X_AXIS));    //panel that holds the edit and delete buttons
                     taskOptions.setBackground(Color.darkGray);
                     taskOptions.setAlignmentX(0.5f);
                     extendedTaskPanel.add(taskOptions);
 
-                    editTask.setText("Edit");
+                    editTask.setText("Edit");   //this button calls the openEditWindow function
                     editTask.setFont(new Font("Times New Roman", Font.PLAIN, 24));
                     editTask.setFocusable(false);
                     editTask.setMaximumSize(new Dimension(100, 30));
                     editTask.setAlignmentY(0.5f);
-                    editTask.addActionListener(b -> openEditWindow());
-                    if (AuthToken.getUserId() != t.getUserId()) {
-                        editTask.setEnabled(false);
-                    }
+                    editTask.addActionListener(b -> openEditWindow(t.getName(), t.getDate().toString(), t.getDescription(), t.getId()));
+                    editTask.setEnabled(AuthToken.getUserId().equals(t.getUserId()));
                     taskOptions.add(editTask);
                     taskOptions.add(Box.createHorizontalStrut(20));
 
-                    deleteTask.setText("Delete");
+                    deleteTask.setText("Delete");   //this button calls the API to delete the current task
                     deleteTask.setFont(new Font("Times New Roman", Font.PLAIN, 24));
                     deleteTask.setFocusable(false);
                     deleteTask.setMaximumSize(new Dimension(100, 30));
                     deleteTask.setAlignmentY(0.5f);
-                    deleteTask.addActionListener(b -> authService.deleteTask(t.getId()));
-                    if (AuthToken.getUserId() != t.getUserId()) {
-                        deleteTask.setEnabled(false);
-                    }
+                    deleteTask.addActionListener(b -> {
+                        if (JOptionPane.showConfirmDialog(M_WINDOW, "Are you sure you wish to delete?") == JOptionPane.OK_OPTION) {
+                            if (authService.deleteTask(t.getId())) {
+                                JOptionPane.showMessageDialog(M_WINDOW, "Task deleted successfully");
+                                M_WINDOW.clearScreen();
+                                M_WINDOW.loadMainScreen();
+                            }
+                            else {
+                                JOptionPane.showMessageDialog(M_WINDOW, "Couldn't delete task");
+                            }
+                        }
+                    });
+                    deleteTask.setEnabled(AuthToken.getUserId().equals(t.getUserId()));
                     taskOptions.add(deleteTask);
 
                     M_WINDOW.revalidate();
@@ -353,11 +366,207 @@ public class Window extends JFrame {
         }
     }
 
-    public void openEditWindow() {
+    public void openEditWindow(String nameText, String dateText, String descriptionText, UUID taskId) {
+        this.remove(extendedTaskPanel);
 
+        extendedTaskPanel = new JPanel();   //panel for editing task
+        extendedTaskPanel.setBounds(WINDOW_WIDTH/3, 0, (WINDOW_WIDTH/3)*2, WINDOW_HEIGHT);
+        extendedTaskPanel.setBackground(Color.darkGray);
+        extendedTaskPanel.setLayout(new BoxLayout(extendedTaskPanel, BoxLayout.Y_AXIS));
+
+        JLabel label1 = new JLabel("Name");
+        JTextField name = new JTextField(nameText);
+        JLabel label2 = new JLabel("Date");
+        JTextField date = new JTextField(dateText);
+        JLabel label3 = new JLabel("Description");
+        JTextArea description = new JTextArea(descriptionText);
+        JPanel taskOptions = new JPanel();
+        JButton apply = new JButton();
+        JButton cancel = new JButton();
+
+
+        label1.setAlignmentX(0.5f); //Name text
+        label1.setFont(new Font("Times New Roman", Font.PLAIN, 32));
+        label1.setForeground(Color.black);
+        extendedTaskPanel.add(label1);
+        extendedTaskPanel.add(Box.createVerticalStrut(5));
+
+        name.setFont(new Font("Times New Roman", Font.PLAIN, 24));  //Text field for the name
+        name.setAlignmentX(0.5f);
+        name.setEnabled(true);
+        name.setMaximumSize(new Dimension(500, 50));
+        extendedTaskPanel.add(name);
+        extendedTaskPanel.add(Box.createVerticalStrut(10));
+
+        label2.setAlignmentX(0.5f); //Date text
+        label2.setFont(new Font("Times New Roman", Font.PLAIN, 32));
+        label2.setForeground(Color.black);
+        extendedTaskPanel.add(label2);
+        extendedTaskPanel.add(Box.createVerticalStrut(5));
+
+        date.setFont(new Font("Times New Roman", Font.PLAIN, 24));  //Text field for the date
+        date.setAlignmentX(0.5f);
+        date.setEnabled(true);
+        date.setMaximumSize(new Dimension(500, 50));
+        extendedTaskPanel.add(date);
+        extendedTaskPanel.add(Box.createVerticalStrut(10));
+
+        label3.setAlignmentX(0.5f); //Description text
+        label3.setFont(new Font("Times New Roman", Font.PLAIN, 32));
+        label3.setForeground(Color.black);
+        extendedTaskPanel.add(label3);
+        extendedTaskPanel.add(Box.createVerticalStrut(5));
+
+        description.setFont(new Font("Times New Roman", Font.PLAIN, 24));   //Text area for description
+        description.setAlignmentX(0.5f);
+        description.setLineWrap(true);
+        description.setEnabled(true);
+        description.setMaximumSize(new Dimension(500, 300));
+        extendedTaskPanel.add(description);
+        extendedTaskPanel.add(Box.createVerticalStrut(50));
+
+        taskOptions.setLayout(new BoxLayout(taskOptions, BoxLayout.X_AXIS));    //panel that holds the apply and cancel buttons
+        taskOptions.setMaximumSize(new Dimension(250, 50));
+        taskOptions.setBackground(Color.darkGray);
+        taskOptions.setAlignmentX(0.5f);
+        extendedTaskPanel.add(taskOptions);
+
+        apply.setText("Apply"); //apply button that calls AuthServices editTask function
+        apply.setFont(new Font("Times New Roman", Font.PLAIN, 24));
+        apply.setFocusable(false);
+        apply.setMaximumSize(new Dimension(110, 30));
+        apply.setAlignmentY(0.5f);
+        apply.addActionListener(e -> {
+            TaskRequest task = new TaskRequest(name.getText(), "2023-05-18", description.getText());
+            if (authService.editTask(task, taskId)) {
+                JOptionPane.showMessageDialog(this, "Task edited successfully");
+                this.remove(extendedTaskPanel);
+                clearScreen();
+                loadMainScreen();
+            }
+            else {
+                JOptionPane.showMessageDialog(this, "Couldn't edit task");
+            }
+        });
+        taskOptions.add(apply);
+        taskOptions.add(Box.createHorizontalStrut(20));
+
+        cancel.setText("Cancel");   //cancel button that returns to main screen
+        cancel.setFont(new Font("Times New Roman", Font.PLAIN, 24));
+        cancel.setFocusable(false);
+        cancel.setMaximumSize(new Dimension(110, 30));
+        cancel.addActionListener(e -> {
+            this.remove(extendedTaskPanel);
+            loadMainScreen();
+        });
+        cancel.setAlignmentY(0.5f);
+        taskOptions.add(cancel);
+
+        this.add(extendedTaskPanel);
+        this.revalidate();
+        this.repaint();
     }
 
     public void openAddWindow() {
+        if (extendedTaskPanel != null) {
+            this.remove(extendedTaskPanel);
+        }
 
+        extendedTaskPanel = new JPanel();
+        extendedTaskPanel.setBounds(WINDOW_WIDTH/3, 0, (WINDOW_WIDTH/3)*2, WINDOW_HEIGHT);
+        extendedTaskPanel.setBackground(Color.darkGray);
+        extendedTaskPanel.setLayout(new BoxLayout(extendedTaskPanel, BoxLayout.Y_AXIS));
+
+        JLabel label1 = new JLabel("Name");
+        JTextField name = new JTextField();
+        JLabel label2 = new JLabel("Date");
+        JTextField date = new JTextField();
+        JLabel label3 = new JLabel("Description");
+        JTextArea description = new JTextArea();
+        JPanel taskOptions = new JPanel();
+        JButton add = new JButton();
+        JButton cancel = new JButton();
+
+
+        label1.setAlignmentX(0.5f);
+        label1.setFont(new Font("Times New Roman", Font.PLAIN, 32));
+        label1.setForeground(Color.black);
+        extendedTaskPanel.add(label1);
+        extendedTaskPanel.add(Box.createVerticalStrut(5));
+
+        name.setFont(new Font("Times New Roman", Font.PLAIN, 24));
+        name.setAlignmentX(0.5f);
+        name.setEnabled(true);
+        name.setMaximumSize(new Dimension(500, 50));
+        extendedTaskPanel.add(name);
+        extendedTaskPanel.add(Box.createVerticalStrut(10));
+
+        label2.setAlignmentX(0.5f);
+        label2.setFont(new Font("Times New Roman", Font.PLAIN, 32));
+        label2.setForeground(Color.black);
+        extendedTaskPanel.add(label2);
+        extendedTaskPanel.add(Box.createVerticalStrut(5));
+
+        date.setFont(new Font("Times New Roman", Font.PLAIN, 24));
+        date.setAlignmentX(0.5f);
+        date.setEnabled(true);
+        date.setMaximumSize(new Dimension(500, 50));
+        extendedTaskPanel.add(date);
+        extendedTaskPanel.add(Box.createVerticalStrut(10));
+
+        label3.setAlignmentX(0.5f);
+        label3.setFont(new Font("Times New Roman", Font.PLAIN, 32));
+        label3.setForeground(Color.black);
+        extendedTaskPanel.add(label3);
+        extendedTaskPanel.add(Box.createVerticalStrut(5));
+
+        description.setFont(new Font("Times New Roman", Font.PLAIN, 24));
+        description.setAlignmentX(0.5f);
+        description.setLineWrap(true);
+        description.setEnabled(true);
+        description.setMaximumSize(new Dimension(500, 300));
+        extendedTaskPanel.add(description);
+        extendedTaskPanel.add(Box.createVerticalStrut(50));
+
+        taskOptions.setLayout(new BoxLayout(taskOptions, BoxLayout.X_AXIS));
+        taskOptions.setMaximumSize(new Dimension(250, 50));
+        taskOptions.setBackground(Color.darkGray);
+        taskOptions.setAlignmentX(0.5f);
+        extendedTaskPanel.add(taskOptions);
+
+        add.setText("Add"); //add button that calls AuthServices addTask function
+        add.setFont(new Font("Times New Roman", Font.PLAIN, 24));
+        add.setFocusable(false);
+        add.setMaximumSize(new Dimension(110, 30));
+        add.setAlignmentY(0.5f);
+        add.addActionListener(e -> {
+            TaskRequest task = new TaskRequest(name.getText(), "2023-05-18", description.getText());
+            if (authService.addTask(task)) {
+                JOptionPane.showMessageDialog(this, "Task added successfully");
+                this.remove(extendedTaskPanel);
+                clearScreen();
+                loadMainScreen();
+            }
+            else {
+                JOptionPane.showMessageDialog(this, "Couldn't add task");
+            }
+        });
+        taskOptions.add(add);
+        taskOptions.add(Box.createHorizontalStrut(20));
+
+        cancel.setText("Cancel");   //cancel button that loads the main screen
+        cancel.setFont(new Font("Times New Roman", Font.PLAIN, 24));
+        cancel.setFocusable(false);
+        cancel.setMaximumSize(new Dimension(110, 30));
+        cancel.addActionListener(e -> {
+            this.remove(extendedTaskPanel);
+            loadMainScreen();
+        });
+        cancel.setAlignmentY(0.5f);
+        taskOptions.add(cancel);
+
+        this.add(extendedTaskPanel);
+        this.revalidate();
+        this.repaint();
     }
 }
